@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Ticket, LogOut } from 'lucide-react';
+import { LayoutDashboard, Ticket, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'next-auth/react';
 
@@ -19,6 +19,12 @@ const routes = [
     icon: Ticket,
     href: '/tickets',
     color: 'text-violet-500',
+  },
+  {
+    label: 'Settings',
+    icon: Settings,
+    href: '/settings',
+    color: 'text-slate-400',
   },
 ];
 
