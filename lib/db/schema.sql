@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS tickets (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     resolved_at DATETIME,
-    FOREIGN KEY (created_by) REFERENCES users (id),
-    FOREIGN KEY (assigned_to) REFERENCES users (id)
+    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (assigned_to) REFERENCES users (id) ON DELETE SET NULL
 );
 
 -- Comments table
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS comments (
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ticket_id) REFERENCES tickets (id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- Indexes for performance

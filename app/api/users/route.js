@@ -5,11 +5,17 @@ import { requireAuth } from "@/lib/auth/session";
 // GET /api/users - Get list of potential assignees (Admins)
 export async function GET(request) {
   try {
-    await requireAuth();
+    const user = await requireAuth();
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get("mode");
 
-    // Only fetch admins as they are the ones who can handle tickets
+    if (mode === "all" && user.role === "ADMIN") {
+      const allUsers = userDb.getAll();
+      return NextResponse.json({ users: allUsers });
+    }
+
+    // Default: fetch admins for assignee lists
     const admins = userDb.getAdmins();
-
     return NextResponse.json({ users: admins });
   } catch (error) {
     console.error("Get users error:", error);
