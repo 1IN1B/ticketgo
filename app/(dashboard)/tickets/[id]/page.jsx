@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import TicketDetails from "@/components/tickets/ticket-details";
 
 export async function generateMetadata({ params }) {
-  const ticket = ticketDb.findById(parseInt((await params).id));
+  const ticket = await ticketDb.findById(parseInt((await params).id));
   return {
     title: ticket ? `${ticket.title} - TicketGo` : "Ticket Not Found",
   };
@@ -14,7 +14,7 @@ export default async function TicketDetailPage({ params }) {
   const session = await auth();
   const ticketId = parseInt((await params).id);
   
-  const ticket = ticketDb.findById(ticketId);
+  const ticket = await ticketDb.findById(ticketId);
   
   if (!ticket) {
     notFound();
@@ -25,8 +25,8 @@ export default async function TicketDetailPage({ params }) {
     notFound(); 
   }
 
-  const initialComments = commentDb.getByTicketId(ticketId);
-  const admins = session.user.role === 'ADMIN' ? userDb.getAdmins() : [];
+  const initialComments = await commentDb.getByTicketId(ticketId);
+  const admins = session.user.role === 'ADMIN' ? await userDb.getAdmins() : [];
 
   return (
     <div className="container mx-auto py-6">

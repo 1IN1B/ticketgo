@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
     const user = await requireAuth();
     const ticketId = parseInt((await params).id);
 
-    const ticket = ticketDb.findById(ticketId);
+    const ticket = await ticketDb.findById(ticketId);
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
@@ -44,7 +44,7 @@ export async function POST(request, { params }) {
     const ticketId = parseInt((await params).id);
     const body = await request.json();
 
-    const ticket = ticketDb.findById(ticketId);
+    const ticket = await ticketDb.findById(ticketId);
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
@@ -59,13 +59,13 @@ export async function POST(request, { params }) {
     const validatedData = commentSchema.parse(body);
 
     // Create comment
-    const result = commentDb.create(
+    const result = await commentDb.create(
       ticketId,
       parseInt(user.id),
       validatedData.content,
     );
 
-    const comments = commentDb.getByTicketId(ticketId);
+    const comments = await commentDb.getByTicketId(ticketId);
     const newComment = comments.find((c) => c.id === result.lastInsertRowid);
 
     return NextResponse.json(

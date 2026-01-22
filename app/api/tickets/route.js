@@ -20,7 +20,7 @@ export async function GET(request) {
       filters.createdBy = parseInt(user.id);
     }
 
-    const tickets = ticketDb.getAll(filters);
+    const tickets = await ticketDb.getAll(filters);
 
     return NextResponse.json({ tickets });
   } catch (error) {
@@ -47,14 +47,14 @@ export async function POST(request) {
     const validatedData = ticketSchema.parse(body);
 
     // Create ticket
-    const result = ticketDb.create(
+    const result = await ticketDb.create(
       validatedData.title,
       validatedData.description,
       validatedData.priority,
       parseInt(user.id),
     );
 
-    const ticket = ticketDb.findById(result.lastInsertRowid);
+    const ticket = await ticketDb.findById(result.lastInsertRowid);
 
     return NextResponse.json(
       { message: "Ticket created successfully", ticket },

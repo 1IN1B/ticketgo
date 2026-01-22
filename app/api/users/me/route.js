@@ -12,7 +12,7 @@ export async function PATCH(request) {
     const validatedData = profileSchema.parse(body);
 
     // Update user name
-    userDb.updateProfile(parseInt(user.id), validatedData.name);
+    await userDb.updateProfile(parseInt(user.id), validatedData.name);
 
     return NextResponse.json({
       message: "Profile updated successfully",

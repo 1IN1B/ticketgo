@@ -20,7 +20,7 @@ export async function DELETE(request) {
     }
 
     // Delete account
-    userDb.delete(parseInt(userSession.id));
+    await userDb.delete(parseInt(userSession.id));
 
     return NextResponse.json({ message: "Account deleted successfully" });
   } catch (error) {

@@ -19,7 +19,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    userDb.delete(targetUserId);
+    await userDb.delete(targetUserId);
 
     return NextResponse.json({ message: "User deleted successfully" });
   } catch (error) {

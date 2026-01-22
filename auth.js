@@ -16,7 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error("Email and password are required");
         }
 
-        const user = userDb.findByEmail(credentials.email);
+        const user = await userDb.findByEmail(credentials.email);
 
         if (!user) {
           throw new Error("Invalid email or password");

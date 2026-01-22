@@ -13,10 +13,10 @@ export async function PATCH(request) {
     const validatedData = passwordChangeSchema.parse(body);
 
     // Get full user data including current password
-    // Find by ID because we need the hashed password
-    const user = db
-      .prepare("SELECT * FROM users WHERE id = ?")
-      .get(parseInt(userRole.id));
+    const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [
+      parseInt(userRole.id),
+    ]);
+    const user = rows[0];
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -39,7 +39,7 @@ export async function PATCH(request) {
     const newHashedPassword = await hashPassword(validatedData.newPassword);
 
     // Update password
-    userDb.updatePassword(user.id, newHashedPassword);
+    await userDb.updatePassword(user.id, newHashedPassword);
 
     return NextResponse.json({ message: "Password updated successfully" });
   } catch (error) {

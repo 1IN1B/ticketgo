@@ -8,7 +8,7 @@ import { auth } from "@/auth";
 import UserManagementDialog from "@/components/dashboard/user-management-dialog";
 
 async function StatsLoader() {
-  const stats = ticketDb.getStats();
+  const stats = await ticketDb.getStats();
   return <StatsGrid stats={stats} />;
 }
 

@@ -10,12 +10,12 @@ export async function GET(request) {
     const mode = searchParams.get("mode");
 
     if (mode === "all" && user.role === "ADMIN") {
-      const allUsers = userDb.getAll();
+      const allUsers = await userDb.getAll();
       return NextResponse.json({ users: allUsers });
     }
 
     // Default: fetch admins for assignee lists
-    const admins = userDb.getAdmins();
+    const admins = await userDb.getAdmins();
     return NextResponse.json({ users: admins });
   } catch (error) {
     console.error("Get users error:", error);

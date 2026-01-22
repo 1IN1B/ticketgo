@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
     const user = await requireAuth();
     const ticketId = parseInt((await params).id);
 
-    const ticket = ticketDb.findById(ticketId);
+    const ticket = await ticketDb.findById(ticketId);
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
@@ -42,7 +42,7 @@ export async function PATCH(request, { params }) {
     const ticketId = parseInt((await params).id);
     const body = await request.json();
 
-    const ticket = ticketDb.findById(ticketId);
+    const ticket = await ticketDb.findById(ticketId);
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
@@ -63,10 +63,10 @@ export async function PATCH(request, { params }) {
         description: validatedData.description,
       };
 
-      ticketDb.update(ticketId, allowedUpdates);
+      await ticketDb.update(ticketId, allowedUpdates);
     } else if (isAdmin) {
       // Admin can update everything
-      ticketDb.update(ticketId, validatedData);
+      await ticketDb.update(ticketId, validatedData);
     } else {
       return NextResponse.json(
         { error: "Forbidden: You cannot edit this ticket" },
@@ -74,7 +74,7 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    const updatedTicket = ticketDb.findById(ticketId);
+    const updatedTicket = await ticketDb.findById(ticketId);
 
     return NextResponse.json({
       message: "Ticket updated successfully",
@@ -114,13 +114,13 @@ export async function DELETE(request, { params }) {
     }
 
     const ticketId = parseInt((await params).id);
-    const ticket = ticketDb.findById(ticketId);
+    const ticket = await ticketDb.findById(ticketId);
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
-    ticketDb.delete(ticketId);
+    await ticketDb.delete(ticketId);
 
     return NextResponse.json({
       message: "Ticket deleted successfully",

@@ -11,7 +11,7 @@ export async function GET(request) {
     // For now, let's return global stats for everyone, but typically
     // normal users might only see their own stats.
 
-    const stats = ticketDb.getStats();
+    const stats = await ticketDb.getStats();
 
     return NextResponse.json({ stats });
   } catch (error) {
