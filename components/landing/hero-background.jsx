@@ -5,59 +5,56 @@ import { motion } from "motion/react";
 export default function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Main large rotating circle */}
-
+      {/* Subtle gradient orbs */}
       <motion.div
-        initial={{ rotateX: 0, rotateY: 0, rotateZ: 0}}
-        animate={{
-          rotateX: [40, 45, -30, 60, 40],
-          rotateY: [0, -60, 40, -20, 0],
-          rotateZ: [0, 360],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] border border-white/50 rounded-full shadow-[0_0_50px_rgba(255,255,255,0.1)]"
-        style={{
-          perspective: "1200px",
-          transformStyle: "preserve-3d",
-        }}
-      >
-        {/* Secondary inner circle with inverse 3D rotation */}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 0.15, scale: 1 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[120px]"
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 0.1, scale: 1 }}
+        transition={{ duration: 2, delay: 0.3, ease: "easeOut" }}
+        className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-violet-500/20 rounded-full blur-[100px]"
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 0.08, scale: 1 }}
+        transition={{ duration: 2, delay: 0.6, ease: "easeOut" }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-500/15 rounded-full blur-[120px]"
+      />
+
+      {/* Floating particles */}
+      {[...Array(6)].map((_, i) => (
         <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-white/20 rounded-full"
+          style={{
+            left: `${15 + (i * 13) % 70}%`,
+            top: `${20 + (i * 17) % 60}%`,
+          }}
           animate={{
-            rotateX: [90, -60, 30, -45, 90],
-            rotateY: [90, 40, -20, 60, 90],
-            rotateZ: [360, 0],
+            y: [-20, 20, -20],
+            opacity: [0.2, 0.5, 0.2],
           }}
           transition={{
-            duration: 20,
+            duration: 4 + i * 0.5,
             repeat: Infinity,
             ease: "easeInOut",
+            delay: i * 0.7,
           }}
-          className="absolute inset-0 border border-white/50 rounded-full shadow-inner"
         />
-                <motion.div
-          animate={{
-            rotateX: [180, -45, 45, -30, 30, 180],
-            rotateY: [180, 40, -20, 60, 180],
-            rotateZ: [360, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute inset-0 border border-white/50 rounded-full shadow-inner"
-        />
+      ))}
 
-
-      </motion.div>
-
-      {/* Additional floating ambient circles */}
-    
+      {/* Grid pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundSize: "60px 60px",
+        }}
+      />
     </div>
   );
 }
