@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, parseDate } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function CommentThread({ comments, currentUserId }) {
@@ -45,7 +45,7 @@ export default function CommentThread({ comments, currentUserId }) {
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                  {formatDistanceToNow(parseDate(comment.created_at), { addSuffix: true })}
                 </span>
               </div>
               <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">

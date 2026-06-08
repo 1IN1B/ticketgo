@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const comments = commentDb.getByTicketId(ticketId);
+    const comments = await commentDb.getByTicketId(ticketId);
 
     return NextResponse.json({ comments });
   } catch (error) {

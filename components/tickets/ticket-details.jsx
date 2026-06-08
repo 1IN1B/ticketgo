@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Edit2, Calendar, User, Mail, Hash, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
+import { parseDate } from "@/lib/utils";
 
 export default function TicketDetails({ ticket, session, initialComments, admins }) {
   const [comments, setComments] = useState(initialComments || []);
@@ -57,7 +58,7 @@ export default function TicketDetails({ ticket, session, initialComments, admins
                </div>
                <div className="flex items-center gap-1.5">
                  <Calendar className="h-4 w-4" />
-                 <span>{format(new Date(ticket.created_at), "PPP")}</span>
+                 <span>{format(parseDate(ticket.created_at), "PPP")}</span>
                </div>
                {ticket.assigned_to_name && (
                  <div className="flex items-center gap-1.5">
@@ -121,7 +122,7 @@ export default function TicketDetails({ ticket, session, initialComments, admins
             
             <div className="space-y-1">
               <span className="text-xs font-semibold text-muted-foreground uppercase">Requested At</span>
-              <p className="text-sm">{format(new Date(ticket.created_at), "PPPP p")}</p>
+              <p className="text-sm">{format(parseDate(ticket.created_at), "PPPP p")}</p>
             </div>
 
             <Separator />

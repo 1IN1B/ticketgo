@@ -3,6 +3,7 @@ import StatusBadge from "./status-badge";
 import PriorityBadge from "./priority-badge";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { parseDate } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 
 export default function TicketListMobile({ tickets }) {
@@ -27,7 +28,7 @@ export default function TicketListMobile({ tickets }) {
               <div className="flex justify-between items-end">
                 <div className="text-xs text-muted-foreground">
                   <p>By {ticket.created_by_name}</p>
-                  <p>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</p>
+                  <p>{formatDistanceToNow(parseDate(ticket.created_at), { addSuffix: true })}</p>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </div>

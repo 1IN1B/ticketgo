@@ -2,6 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import StatusBadge from "./status-badge";
 import PriorityBadge from "./priority-badge";
 import Link from "next/link";
+import { parseDate } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
 export default function TicketTable({ tickets }) {
@@ -47,7 +48,7 @@ export default function TicketTable({ tickets }) {
                 {ticket.created_by_name}
               </TableCell>
               <TableCell className="text-right text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+                {formatDistanceToNow(parseDate(ticket.created_at), { addSuffix: true })}
               </TableCell>
             </TableRow>
           ))}

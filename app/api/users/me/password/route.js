@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { userDb, db } from "@/lib/db";
+import { userDb } from "@/lib/db";
 import { requireAuth } from "@/lib/auth/session";
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
 import { passwordChangeSchema } from "@/lib/validations";
@@ -13,10 +13,7 @@ export async function PATCH(request) {
     const validatedData = passwordChangeSchema.parse(body);
 
     // Get full user data including current password
-    const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [
-      parseInt(userRole.id),
-    ]);
-    const user = rows[0];
+    const user = await userDb.findByEmail(userRole.email);
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
