@@ -5,9 +5,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { useTicketStore } from "@/store/ticket-store";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function TicketFilters() {
-  const { 
+  const {
     searchQuery, setSearchQuery,
     statusFilter, setStatusFilter,
     priorityFilter, setPriorityFilter,
@@ -17,7 +18,12 @@ export default function TicketFilters() {
   const hasFilters = searchQuery || statusFilter !== 'ALL' || priorityFilter !== 'ALL';
 
   return (
-    <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b pb-4 mb-6 pt-2">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.1 }}
+      className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b pb-4 mb-6 pt-2"
+    >
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -25,10 +31,10 @@ export default function TicketFilters() {
             placeholder="Search tickets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
           />
         </div>
-        
+
         <div className="flex flex-wrap gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[140px]">
@@ -56,18 +62,27 @@ export default function TicketFilters() {
             </SelectContent>
           </Select>
 
-          {hasFilters && (
-            <Button 
-              variant="ghost" 
-              onClick={resetFilters}
-              className="px-2 lg:px-3"
-            >
-              Reset
-              <X className="ml-2 h-4 w-4" />
-            </Button>
-          )}
+          <AnimatePresence>
+            {hasFilters && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Button
+                  variant="ghost"
+                  onClick={resetFilters}
+                  className="px-2 lg:px-3"
+                >
+                  Reset
+                  <X className="ml-2 h-4 w-4" />
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

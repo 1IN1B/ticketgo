@@ -24,7 +24,7 @@ export default function CommentForm({ ticketId, onCommentAdded }) {
       });
 
       if (!response.ok) throw new Error("Failed to post comment");
-      
+
       const result = await response.json();
       reset();
       if (onCommentAdded) onCommentAdded(result.comment);
@@ -40,13 +40,13 @@ export default function CommentForm({ ticketId, onCommentAdded }) {
       <div className="relative">
         <Textarea
           placeholder="Add a comment or internal note..."
-          className="min-h-[100px] resize-none pr-12"
+          className="min-h-[100px] resize-none pr-12 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
           {...register("content")}
           disabled={isLoading}
         />
-        <Button 
-          type="submit" 
-          size="icon" 
+        <Button
+          type="submit"
+          size="icon"
           className="absolute right-2 bottom-2"
           disabled={isLoading}
         >
