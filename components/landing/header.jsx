@@ -10,6 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Header() {
   const navItems = [
@@ -46,6 +47,9 @@ export default function Header() {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
+        <div className="hidden md:block">
+          <ThemeToggle variant="ghost" size="icon" />
+        </div>
         <Button
           variant="ghost"
           className="hidden md:flex text-neutral-300 hover:text-white hover:bg-white/10 rounded-full px-6"
@@ -95,6 +99,10 @@ export default function Header() {
                   </Link>
                 ))}
                 <div className="pt-4 border-t border-white/10 flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-400">Theme</span>
+                    <ThemeToggle variant="ghost" size="sm" />
+                  </div>
                   <Button
                     variant="outline"
                     className="border-white/10 text-white hover:bg-white/10 w-full rounded-xl"

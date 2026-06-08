@@ -8,11 +8,12 @@ import { useTicketStore } from "@/store/ticket-store";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { motion } from "motion/react";
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { 
+  const {
     searchQuery, statusFilter, priorityFilter,
     currentPage, itemsPerPage, setCurrentPage
   } = useTicketStore();
@@ -25,7 +26,7 @@ export default function TicketsPage() {
         if (statusFilter !== 'ALL') queryParams.append('status', statusFilter);
         if (priorityFilter !== 'ALL') queryParams.append('priority', priorityFilter);
         if (searchQuery) queryParams.append('search', searchQuery);
-        
+
         const response = await fetch(`/api/tickets?${queryParams.toString()}`);
         const data = await response.json();
         setTickets(data.tickets || []);
@@ -47,7 +48,12 @@ export default function TicketsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-between"
+      >
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Tickets</h2>
           <p className="text-muted-foreground">
@@ -60,22 +66,31 @@ export default function TicketsPage() {
             New Ticket
           </Button>
         </Link>
-      </div>
+      </motion.div>
 
       <TicketFilters />
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-2">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center justify-center py-20 gap-2"
+        >
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Loading tickets...</p>
-        </div>
+        </motion.div>
       ) : (
         <>
           <TicketTable tickets={paginatedTickets} />
           <TicketListMobile tickets={paginatedTickets} />
-          
+
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t pt-4 mt-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="flex items-center justify-between border-t pt-4 mt-6"
+            >
               <p className="text-sm text-muted-foreground">
                 Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems} tickets
               </p>
@@ -97,7 +112,7 @@ export default function TicketsPage() {
                   Next
                 </Button>
               </div>
-            </div>
+            </motion.div>
           )}
         </>
       )}

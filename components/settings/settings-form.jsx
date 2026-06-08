@@ -6,23 +6,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { signOut, useSession } from "next-auth/react";
-import { 
-  profileSchema, 
-  passwordChangeSchema, 
-  accountDeletionSchema 
+import {
+  profileSchema,
+  passwordChangeSchema,
+  accountDeletionSchema
 } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card";
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -41,17 +41,19 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
-import { Loader2, User, ShieldCheck, Trash2, AlertCircle } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Loader2, User, ShieldCheck, Trash2, AlertCircle, Palette } from "lucide-react";
+import { motion } from "motion/react";
 
 export default function SettingsForm({ user }) {
   const router = useRouter();
   const { update } = useSession();
-  
+
   // Loading states for final execution
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  
+
   // Dialog visibility states
   const [isProfileConfirmOpen, setIsProfileConfirmOpen] = useState(false);
   const [isPasswordConfirmOpen, setIsPasswordConfirmOpen] = useState(false);
@@ -76,7 +78,7 @@ export default function SettingsForm({ user }) {
 
   const handleExecuteProfileUpdate = async () => {
     if (!pendingProfileData) return;
-    
+
     setIsUpdatingProfile(true);
     try {
       const response = await fetch("/api/users/me", {
@@ -92,7 +94,7 @@ export default function SettingsForm({ user }) {
 
       // Update the client-side session so the TopNav reflects changes
       await update({ name: pendingProfileData.name });
-      
+
       toast.success("Profile updated successfully");
       setIsProfileConfirmOpen(false);
       router.refresh();
@@ -120,7 +122,7 @@ export default function SettingsForm({ user }) {
 
   const handleExecutePasswordChange = async () => {
     if (!pendingPasswordData) return;
-    
+
     setIsChangingPassword(true);
     try {
       const response = await fetch("/api/users/me/password", {
@@ -181,11 +183,18 @@ export default function SettingsForm({ user }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
       {/* Profile Section */}
-      <div className="space-y-4 h-full">
-        <Card className="h-full flex flex-col shadow-sm border-none ring-1 ring-slate-200">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="space-y-4 h-full"
+      >
+        <Card className="h-full flex flex-col shadow-sm border-none ring-1 ring-border/50 bg-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <div className="flex items-center gap-2 mb-1">
-              <User className="h-5 w-5 text-sky-500" />
+              <div className="p-2 rounded-lg bg-sky-500/10">
+                <User className="h-5 w-5 text-sky-500" />
+              </div>
               <CardTitle>Profile Information</CardTitle>
             </div>
             <CardDescription>
@@ -196,15 +205,16 @@ export default function SettingsForm({ user }) {
             <form id="profile-form" onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
-                <Input id="email" value={user.email} disabled className="bg-slate-50 border-slate-200" />
+                <Input id="email" value={user.email} disabled className="bg-muted/50 border-border/50" />
                 <p className="text-[10px] text-muted-foreground italic">Email change is currently disabled.</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Display Name</Label>
-                <Input 
-                  id="name" 
-                  {...profileForm.register("name")} 
+                <Input
+                  id="name"
+                  {...profileForm.register("name")}
                   disabled={isUpdatingProfile}
+                  className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                 />
                 {profileForm.formState.errors.name && (
                   <p className="text-xs text-red-500 font-medium">{profileForm.formState.errors.name.message}</p>
@@ -212,20 +222,27 @@ export default function SettingsForm({ user }) {
               </div>
             </form>
           </CardContent>
-          <CardFooter className="border-t pt-6 bg-slate-50/30">
+          <CardFooter className="border-t pt-6 bg-muted/20">
             <Button type="submit" form="profile-form" disabled={isUpdatingProfile} className="w-full">
               Save Changes
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </motion.div>
 
       {/* Security Section */}
-      <div className="space-y-4 h-full">
-        <Card className="h-full flex flex-col shadow-sm border-none ring-1 ring-slate-200">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="space-y-4 h-full"
+      >
+        <Card className="h-full flex flex-col shadow-sm border-none ring-1 ring-border/50 bg-card hover:shadow-md transition-shadow duration-300">
           <CardHeader>
             <div className="flex items-center gap-2 mb-1">
-              <ShieldCheck className="h-5 w-5 text-emerald-500" />
+              <div className="p-2 rounded-lg bg-emerald-500/10">
+                <ShieldCheck className="h-5 w-5 text-emerald-500" />
+              </div>
               <CardTitle>Security</CardTitle>
             </div>
             <CardDescription>
@@ -236,11 +253,12 @@ export default function SettingsForm({ user }) {
             <form id="password-form" onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
-                <Input 
-                  id="currentPassword" 
+                <Input
+                  id="currentPassword"
                   type="password"
                   {...passwordForm.register("currentPassword")}
                   disabled={isChangingPassword}
+                  className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                 />
                 {passwordForm.formState.errors.currentPassword && (
                   <p className="text-xs text-red-500 font-medium">{passwordForm.formState.errors.currentPassword.message}</p>
@@ -248,11 +266,12 @@ export default function SettingsForm({ user }) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
-                <Input 
-                  id="newPassword" 
+                <Input
+                  id="newPassword"
                   type="password"
                   {...passwordForm.register("newPassword")}
                   disabled={isChangingPassword}
+                  className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                 />
                 {passwordForm.formState.errors.newPassword && (
                   <p className="text-xs text-red-500 font-medium">{passwordForm.formState.errors.newPassword.message}</p>
@@ -260,11 +279,12 @@ export default function SettingsForm({ user }) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input 
-                  id="confirmPassword" 
+                <Input
+                  id="confirmPassword"
                   type="password"
                   {...passwordForm.register("confirmPassword")}
                   disabled={isChangingPassword}
+                  className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                 />
                 {passwordForm.formState.errors.confirmPassword && (
                   <p className="text-xs text-red-500 font-medium">{passwordForm.formState.errors.confirmPassword.message}</p>
@@ -272,20 +292,62 @@ export default function SettingsForm({ user }) {
               </div>
             </form>
           </CardContent>
-          <CardFooter className="border-t pt-6 bg-slate-50/30">
+          <CardFooter className="border-t pt-6 bg-muted/20">
             <Button type="submit" form="password-form" disabled={isChangingPassword} className="w-full">
               Update Password
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </motion.div>
+
+      {/* Appearance Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="md:col-span-2"
+      >
+        <Card className="shadow-sm border-none ring-1 ring-border/50 bg-card hover:shadow-md transition-shadow duration-300">
+          <CardHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="p-2 rounded-lg bg-violet-500/10">
+                <Palette className="h-5 w-5 text-violet-500" />
+              </div>
+              <CardTitle>Appearance</CardTitle>
+            </div>
+            <CardDescription>
+              Customize the look and feel of the application.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-muted/30 border border-border/50 rounded-xl">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold">Theme</p>
+                <p className="text-xs text-muted-foreground">
+                  Choose between light, dark, or system default theme.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <ThemeToggle variant="outline" size="default" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Danger Zone Section */}
-      <div className="md:col-span-2">
-        <Card className="shadow-sm border-none ring-1 ring-red-100 bg-red-50/10">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="md:col-span-2"
+      >
+        <Card className="shadow-sm border-none ring-1 ring-destructive/20 bg-card">
           <CardHeader>
-            <div className="flex items-center gap-2 mb-1 text-red-600">
-              <Trash2 className="h-5 w-5" />
+            <div className="flex items-center gap-2 mb-1 text-destructive">
+              <div className="p-2 rounded-lg bg-destructive/10">
+                <Trash2 className="h-5 w-5" />
+              </div>
               <CardTitle>Danger Zone</CardTitle>
             </div>
             <CardDescription>
@@ -293,15 +355,15 @@ export default function SettingsForm({ user }) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-red-50 border border-red-100 rounded-lg">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-destructive/5 border border-destructive/10 rounded-xl">
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-red-900">Delete My Account</p>
-                <p className="text-xs text-red-700">
+                <p className="text-sm font-semibold text-destructive">Delete My Account</p>
+                <p className="text-xs text-destructive/80">
                   This action is permanent and cannot be undone. All tickets and history will be lost.
                 </p>
               </div>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={() => setIsDeleteDialogOpen(true)}
                 className="shrink-0"
               >
@@ -310,7 +372,7 @@ export default function SettingsForm({ user }) {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       {/* PROFILE CONFIRMATION DIALOG */}
       <Dialog open={isProfileConfirmOpen} onOpenChange={setIsProfileConfirmOpen}>
@@ -325,16 +387,16 @@ export default function SettingsForm({ user }) {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 px-1">
-             <div className="p-3 bg-slate-50 rounded-md border border-slate-100">
+             <div className="p-3 bg-muted/50 rounded-md border border-border/50">
                <span className="text-xs uppercase text-muted-foreground font-semibold">New Name</span>
-               <p className="text-lg font-medium text-slate-900 mt-1">{pendingProfileData?.name}</p>
+               <p className="text-lg font-medium mt-1">{pendingProfileData?.name}</p>
              </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" disabled={isUpdatingProfile}>Cancel</Button>
             </DialogClose>
-            <Button 
+            <Button
               onClick={handleExecuteProfileUpdate}
               disabled={isUpdatingProfile}
               className="bg-sky-600 hover:bg-sky-700"
@@ -364,7 +426,7 @@ export default function SettingsForm({ user }) {
               Your security is important. Please confirm that you want to update your access credentials.
             </DialogDescription>
           </DialogHeader>
-          <div className="p-4 bg-emerald-50 text-emerald-800 rounded-md text-sm border border-emerald-100">
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200 rounded-md text-sm border border-emerald-100 dark:border-emerald-900">
              <p className="flex items-center gap-2 font-medium">
                <ShieldCheck className="h-4 w-4" />
                Security requirement
@@ -375,7 +437,7 @@ export default function SettingsForm({ user }) {
             <DialogClose asChild>
               <Button variant="outline" disabled={isChangingPassword}>Cancel</Button>
             </DialogClose>
-            <Button 
+            <Button
               onClick={handleExecutePasswordChange}
               disabled={isChangingPassword}
               className="bg-emerald-600 hover:bg-emerald-700"
@@ -397,21 +459,22 @@ export default function SettingsForm({ user }) {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <div className="flex items-center gap-2 text-red-600 mb-2">
+            <div className="flex items-center gap-2 text-destructive mb-2">
               <AlertCircle className="h-5 w-5" />
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             </div>
             <AlertDialogDescription>
-              This action is permanent and will delete your entire support history. 
-              To confirm, please type your account email: <span className="font-bold text-slate-900">{user.email}</span>
+              This action is permanent and will delete your entire support history.
+              To confirm, please type your account email: <span className="font-bold">{user.email}</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
             <form id="delete-form" onSubmit={deleteForm.handleSubmit(onDeleteSubmit)}>
-              <Input 
-                 placeholder="Enter your email" 
+              <Input
+                 placeholder="Enter your email"
                  {...deleteForm.register("confirmEmail")}
                  disabled={isDeletingAccount}
+                 className="transition-all duration-200 focus:ring-2 focus:ring-destructive/20"
               />
               {deleteForm.formState.errors.confirmEmail && (
                 <p className="text-xs text-red-500 font-medium mt-1">{deleteForm.formState.errors.confirmEmail.message}</p>
@@ -420,9 +483,9 @@ export default function SettingsForm({ user }) {
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               asChild
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               disabled={isDeletingAccount}
             >
               <button type="submit" form="delete-form">

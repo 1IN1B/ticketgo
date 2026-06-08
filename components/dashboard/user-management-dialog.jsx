@@ -1,26 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Users, 
-  Search, 
-  Trash2, 
-  UserCog, 
-  Loader2, 
-  UserMinus,
+import {
+  Users,
+  Search,
+  Trash2,
+  UserCog,
+  Loader2,
   AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
@@ -34,6 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { motion } from "motion/react";
 
 export default function UserManagementDialog() {
   const [users, setUsers] = useState([]);
@@ -59,18 +59,18 @@ export default function UserManagementDialog() {
 
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/users/${userToDelete.id}`, {
         method: "DELETE",
       });
-      
+
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || "Failed to delete user");
       }
-      
+
       toast.success(`User ${userToDelete.name} deleted successfully`);
       setUsers(users.filter(u => u.id !== userToDelete.id));
       setIsDeleteDialogOpen(false);
@@ -82,7 +82,7 @@ export default function UserManagementDialog() {
     }
   };
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -106,7 +106,7 @@ export default function UserManagementDialog() {
               View and manage all registered users in TicketGo.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="px-6 pb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -122,27 +122,33 @@ export default function UserManagementDialog() {
           <ScrollArea className="h-[350px] border-t">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-full py-20 gap-2">
-                <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <p className="text-sm text-muted-foreground">Loading users...</p>
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full py-20 gap-2">
-                <Users className="h-8 w-8 text-slate-200" />
+                <Users className="h-8 w-8 text-muted-foreground/30" />
                 <p className="text-sm text-muted-foreground">No users found</p>
               </div>
             ) : (
-              <div className="divide-y">
-                {filteredUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+              <div className="divide-y divide-border/50">
+                {filteredUsers.map((user, index) => (
+                  <motion.div
+                    key={user.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                    className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                  >
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
-                        <AvatarFallback className={user.role === 'ADMIN' ? "bg-amber-100 text-amber-700" : "bg-sky-100 text-sky-700"}>
+                      <Avatar className="h-9 w-9 border-2 border-background shadow-sm">
+                        <AvatarFallback className={user.role === 'ADMIN' ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200" : "bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-200"}>
                           {user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-slate-900">{user.name}</span>
+                          <span className="text-sm font-semibold">{user.name}</span>
                           <Badge variant={user.role === 'ADMIN' ? "warning" : "secondary"} className="text-[10px] px-1 py-0 h-4 uppercase font-bold">
                             {user.role}
                           </Badge>
@@ -150,11 +156,11 @@ export default function UserManagementDialog() {
                         <span className="text-xs text-muted-foreground">{user.email}</span>
                       </div>
                     </div>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-slate-400 hover:text-red-500 hover:bg-red-50"
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                       onClick={() => {
                         setUserToDelete(user);
                         setIsDeleteDialogOpen(true);
@@ -162,13 +168,13 @@ export default function UserManagementDialog() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
           </ScrollArea>
-          
-          <div className="p-4 bg-slate-50 border-t flex justify-between items-center">
+
+          <div className="p-4 bg-muted/30 border-t flex justify-between items-center">
             <span className="text-xs text-muted-foreground">
               Total Users: {users.length}
             </span>
@@ -182,23 +188,23 @@ export default function UserManagementDialog() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <div className="flex items-center gap-2 text-red-600 mb-2">
+            <div className="flex items-center gap-2 text-destructive mb-2">
               <AlertCircle className="h-5 w-5" />
               <AlertDialogTitle>Delete User?</AlertDialogTitle>
             </div>
             <AlertDialogDescription>
-              Are you sure you want to delete <span className="font-bold text-slate-900">{userToDelete?.name}</span>?
+              Are you sure you want to delete <span className="font-bold">{userToDelete?.name}</span>?
               This will also delete all their tickets and comments. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
                 handleDeleteUser();
               }}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               disabled={isDeleting}
             >
               {isDeleting ? (

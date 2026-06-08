@@ -6,6 +6,7 @@ import Sidebar from '@/components/layout/sidebar';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function MobileNav() {
   const [isMounted, setIsMounted] = useState(false);
@@ -31,7 +32,7 @@ export default function MobileNav() {
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 bg-slate-900 border-r-slate-800 text-white w-72">
+      <SheetContent side="left" className="p-0 w-72 bg-sidebar border-r border-sidebar-border">
         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
         <Sidebar />
       </SheetContent>
