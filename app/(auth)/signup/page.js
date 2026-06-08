@@ -1,4 +1,5 @@
 import SignupForm from "@/components/auth/signup-form";
+import { AuthLayout } from "@/components/auth/auth-layout";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
@@ -15,8 +16,8 @@ export default async function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+    <AuthLayout mode="signup">
       <SignupForm />
-    </div>
+    </AuthLayout>
   );
 }
