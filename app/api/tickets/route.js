@@ -1,24 +1,30 @@
 import { NextResponse } from "next/server";
-import { ticketDb } from "@/lib/db";
+import { ticketDb, orgMemberDb } from "@/lib/db";
 import { requireAuth } from "@/lib/auth/session";
 import { ticketSchema } from "@/lib/validations";
 
-// GET /api/tickets - List all tickets with filters
 export async function GET(request) {
   try {
     const user = await requireAuth();
     const { searchParams } = new URL(request.url);
 
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
+
+    if (!currentOrgId) {
+      return NextResponse.json({ tickets: [] });
+    }
+
+    const isMember = await orgMemberDb.isMember(currentOrgId, parseInt(user.id));
+    if (!isMember) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const filters = {
+      orgId: currentOrgId,
       status: searchParams.get("status") || undefined,
       priority: searchParams.get("priority") || undefined,
       search: searchParams.get("search") || undefined,
     };
-
-    // Non-admin users can only see their own tickets
-    if (user.role !== "ADMIN") {
-      filters.createdBy = parseInt(user.id);
-    }
 
     const tickets = await ticketDb.getAll(filters);
 
@@ -37,21 +43,33 @@ export async function GET(request) {
   }
 }
 
-// POST /api/tickets - Create a new ticket
 export async function POST(request) {
   try {
     const user = await requireAuth();
     const body = await request.json();
 
-    // Validate input
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
+
+    if (!currentOrgId) {
+      return NextResponse.json(
+        { error: "You must be in an organization to create tickets" },
+        { status: 400 },
+      );
+    }
+
+    const isMember = await orgMemberDb.isMember(currentOrgId, parseInt(user.id));
+    if (!isMember) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const validatedData = ticketSchema.parse(body);
 
-    // Create ticket
     const result = await ticketDb.create(
       validatedData.title,
       validatedData.description,
       validatedData.priority,
       parseInt(user.id),
+      currentOrgId,
     );
 
     const ticket = await ticketDb.findById(result.lastInsertRowid);

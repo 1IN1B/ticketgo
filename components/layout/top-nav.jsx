@@ -1,14 +1,18 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import MobileNav from '@/components/layout/mobile-nav';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Building2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function TopNav({ user }) {
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
     : 'U';
+
+  const orgRoleLabel = user?.currentOrgRole === 'ORG_ADMIN' ? 'Org Admin' : 'Org Member';
 
   return (
     <motion.div
@@ -32,7 +36,7 @@ export default function TopNav({ user }) {
           <div className="flex items-center gap-x-3">
             <div className="text-sm font-medium text-right hidden md:block">
               <p className="leading-tight">{user?.name}</p>
-              <p className="text-xs text-muted-foreground leading-tight">{user?.role}</p>
+              <p className="text-xs text-muted-foreground leading-tight">{orgRoleLabel}</p>
             </div>
             <motion.div
               whileHover={{ scale: 1.05 }}

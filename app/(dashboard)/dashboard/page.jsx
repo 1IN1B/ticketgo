@@ -5,29 +5,36 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { auth } from "@/auth";
-import UserManagementDialog from "@/components/dashboard/user-management-dialog";
+import OrgMemberManagementDialog from "@/components/organizations/org-member-management-dialog";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 
-async function StatsLoader() {
-  const stats = await ticketDb.getStats();
+async function StatsLoader({ orgId }) {
+  const stats = await ticketDb.getStats(orgId);
   return <StatsGrid stats={stats} />;
 }
 
 export default async function DashboardPage() {
   const session = await auth();
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const currentOrgId = session?.user?.currentOrgId ? parseInt(session.user.currentOrgId) : null;
+  const isOrgAdmin = session?.user?.currentOrgRole === 'ORG_ADMIN';
 
   return (
     <div className="space-y-8">
       <DashboardHeader />
 
-      <Suspense fallback={<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-32 bg-muted animate-pulse rounded-xl border" />
-        ))}
-      </div>}>
-        <StatsLoader />
-      </Suspense>
+      {currentOrgId ? (
+        <Suspense fallback={<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-muted animate-pulse rounded-xl border" />
+          ))}
+        </div>}>
+          <StatsLoader orgId={currentOrgId} />
+        </Suspense>
+      ) : (
+        <div className="text-center py-20 bg-muted/50 rounded-xl border border-dashed">
+          <p className="text-muted-foreground">Select an organization to view stats.</p>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-4 bg-card p-6 rounded-xl border shadow-sm">
@@ -39,7 +46,7 @@ export default async function DashboardPage() {
              <Link href="/tickets">
                <Button variant="outline">Browse All Tickets</Button>
              </Link>
-             {isAdmin && <UserManagementDialog />}
+             {isOrgAdmin && currentOrgId && <OrgMemberManagementDialog orgId={currentOrgId} />}
            </div>
         </div>
         <div className="col-span-3 bg-card p-6 rounded-xl border shadow-sm">

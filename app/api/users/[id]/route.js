@@ -1,24 +1,38 @@
 import { NextResponse } from "next/server";
-import { userDb } from "@/lib/db";
-import { requireAdmin } from "@/lib/auth/session";
+import { userDb, orgMemberDb } from "@/lib/db";
+import { requireAuth } from "@/lib/auth/session";
 
 export async function DELETE(request, { params }) {
   try {
-    const admin = await requireAdmin();
+    const user = await requireAuth();
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
+
+    if (!currentOrgId) {
+      return NextResponse.json(
+        { error: "Forbidden: Organization context required" },
+        { status: 403 },
+      );
+    }
+
+    const isOrgAdmin = await orgMemberDb.isOrgAdmin(currentOrgId, parseInt(user.id));
+
+    if (!isOrgAdmin) {
+      return NextResponse.json(
+        { error: "Forbidden: Organization admin access required" },
+        { status: 403 },
+      );
+    }
+
     const targetUserId = parseInt((await params).id);
 
-    // Prevent self-deletion via this admin management tool
-    // (they can use settings for that)
-    if (targetUserId === parseInt(admin.id)) {
+    if (targetUserId === parseInt(user.id)) {
       return NextResponse.json(
-        {
-          error:
-            "You cannot delete your own account from the user management tool.",
-        },
+        { error: "You cannot delete your own account from the user management tool." },
         { status: 400 },
       );
     }
 
+    await orgMemberDb.removeMember(currentOrgId, targetUserId);
     await userDb.delete(targetUserId);
 
     return NextResponse.json({ message: "User deleted successfully" });
@@ -30,7 +44,7 @@ export async function DELETE(request, { params }) {
     }
 
     if (error.message.includes("Forbidden")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
 
     return NextResponse.json(

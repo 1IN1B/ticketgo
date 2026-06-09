@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { ticketDb } from "@/lib/db";
+import { ticketDb, orgMemberDb, userDb } from "@/lib/db";
 import { requireAuth } from "@/lib/auth/session";
 import { ticketUpdateSchema } from "@/lib/validations";
 
-// GET /api/tickets/[id] - Get ticket details
 export async function GET(request, { params }) {
   try {
     const user = await requireAuth();
@@ -15,8 +14,14 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
-    // Non-admin users can only view their own tickets
-    if (user.role !== "ADMIN" && ticket.created_by !== parseInt(user.id)) {
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
+
+    if (!currentOrgId || ticket.org_id !== currentOrgId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const isMember = await orgMemberDb.isMember(currentOrgId, parseInt(user.id));
+    if (!isMember) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -35,7 +40,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// PATCH /api/tickets/[id] - Update ticket
 export async function PATCH(request, { params }) {
   try {
     const user = await requireAuth();
@@ -48,24 +52,25 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
-    // Validate input
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
+
+    if (!currentOrgId || ticket.org_id !== currentOrgId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const validatedData = ticketUpdateSchema.parse(body);
 
-    // Check permissions
+    const isOrgAdmin = await orgMemberDb.isOrgAdmin(currentOrgId, parseInt(user.id));
     const isOwner = ticket.created_by === parseInt(user.id);
-    const isAdmin = user.role === "ADMIN";
 
-    // Only owner can edit if status is OPEN
     if (isOwner && ticket.status === "OPEN") {
-      // Owner can only update title and description
       const allowedUpdates = {
         title: validatedData.title,
         description: validatedData.description,
       };
 
       await ticketDb.update(ticketId, allowedUpdates);
-    } else if (isAdmin) {
-      // Admin can update everything
+    } else if (isOrgAdmin) {
       await ticketDb.update(ticketId, validatedData);
     } else {
       return NextResponse.json(
@@ -101,14 +106,23 @@ export async function PATCH(request, { params }) {
   }
 }
 
-// DELETE /api/tickets/[id] - Delete ticket (admin only)
 export async function DELETE(request, { params }) {
   try {
     const user = await requireAuth();
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
 
-    if (user.role !== "ADMIN") {
+    if (!currentOrgId) {
       return NextResponse.json(
-        { error: "Forbidden: Admin access required" },
+        { error: "Forbidden: Organization context required" },
+        { status: 403 },
+      );
+    }
+
+    const isOrgAdmin = await orgMemberDb.isOrgAdmin(currentOrgId, parseInt(user.id));
+
+    if (!isOrgAdmin) {
+      return NextResponse.json(
+        { error: "Forbidden: Organization admin access required" },
         { status: 403 },
       );
     }
@@ -118,6 +132,10 @@ export async function DELETE(request, { params }) {
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
+    }
+
+    if (ticket.org_id !== currentOrgId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await ticketDb.delete(ticketId);

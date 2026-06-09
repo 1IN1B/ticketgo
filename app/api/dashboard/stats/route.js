@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
-import { ticketDb } from "@/lib/db";
+import { ticketDb, orgMemberDb } from "@/lib/db";
 import { requireAuth } from "@/lib/auth/session";
 
-// GET /api/dashboard/stats - Get dashboard metrics
 export async function GET(request) {
   try {
     const user = await requireAuth();
 
-    // Stats are currently global, but we could filter by user if needed
-    // For now, let's return global stats for everyone, but typically
-    // normal users might only see their own stats.
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
 
-    const stats = await ticketDb.getStats();
+    if (!currentOrgId) {
+      return NextResponse.json({ stats: { total: 0, byStatus: {}, avgResolutionHours: 0 } });
+    }
+
+    const isMember = await orgMemberDb.isMember(currentOrgId, parseInt(user.id));
+    if (!isMember) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const stats = await ticketDb.getStats(currentOrgId);
 
     return NextResponse.json({ stats });
   } catch (error) {

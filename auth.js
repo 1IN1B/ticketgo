@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { userDb } from "@/lib/db";
+import { userDb, orgMemberDb } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth/password";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -31,11 +31,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error("Invalid email or password");
         }
 
+        const userOrgs = await orgMemberDb.getOrgsForUser(user.id);
+        const currentOrgId = userOrgs.length > 0 ? userOrgs[0].id : null;
+        const currentOrgRole = userOrgs.length > 0 ? userOrgs[0].user_role : null;
+
         return {
           id: user.id.toString(),
           email: user.email,
           name: user.name,
-          role: user.role,
+          currentOrgId: currentOrgId?.toString(),
+          currentOrgRole,
         };
       },
     }),
@@ -44,13 +49,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
         token.name = user.name;
+        token.currentOrgId = user.currentOrgId;
+        token.currentOrgRole = user.currentOrgRole;
       }
 
-      // Handle session updates (e.g. name change)
       if (trigger === "update" && session?.name) {
         token.name = session.name;
+      }
+
+      if (trigger === "update" && session?.currentOrgId) {
+        token.currentOrgId = session.currentOrgId;
+        token.currentOrgRole = session.currentOrgRole;
       }
 
       return token;
@@ -58,8 +68,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
-        session.user.role = token.role;
         session.user.name = token.name;
+        session.user.currentOrgId = token.currentOrgId;
+        session.user.currentOrgRole = token.currentOrgRole;
       }
       return session;
     },

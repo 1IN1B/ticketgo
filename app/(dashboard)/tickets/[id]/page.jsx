@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { ticketDb, commentDb, userDb } from "@/lib/db";
+import { ticketDb, commentDb, userDb, orgMemberDb } from "@/lib/db";
 import { notFound } from "next/navigation";
 import TicketDetails from "@/components/tickets/ticket-details";
 
@@ -20,13 +20,19 @@ export default async function TicketDetailPage({ params }) {
     notFound();
   }
 
-  // Security check: Non-admins can only see their own tickets
-  if (!session || (session.user.role !== 'ADMIN' && ticket.created_by !== parseInt(session.user.id))) {
-    notFound(); 
+  const currentOrgId = session?.user?.currentOrgId ? parseInt(session.user.currentOrgId) : null;
+
+  if (!session || !currentOrgId || ticket.org_id !== currentOrgId) {
+    notFound();
   }
 
-  const initialComments = await commentDb.getByTicketId(ticketId);
-  const admins = session.user.role === 'ADMIN' ? await userDb.getAdmins() : [];
+  const isMember = await orgMemberDb.isMember(currentOrgId, parseInt(session.user.id));
+  if (!isMember) {
+    notFound();
+  }
+
+  const initialComments = await commentDb.getByTicketId(ticketId, currentOrgId);
+  const orgAdmins = session.user.currentOrgRole === 'ORG_ADMIN' ? await userDb.getOrgAdmins(currentOrgId) : [];
 
   return (
     <div className="container mx-auto py-6">
@@ -34,7 +40,7 @@ export default async function TicketDetailPage({ params }) {
         ticket={ticket} 
         session={session} 
         initialComments={initialComments}
-        admins={admins}
+        orgAdmins={orgAdmins}
       />
     </div>
   );

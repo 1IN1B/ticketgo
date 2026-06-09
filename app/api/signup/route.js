@@ -1,24 +1,14 @@
 import { NextResponse } from "next/server";
-import { userDb, initializeDatabase } from "@/lib/db";
+import { userDb, orgMemberDb, orgDb } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
 import { signupSchema } from "@/lib/validations";
-
-// Initialize database on first run
-// Database should be initialized via migration scripts or manual setup in MySQL
-// try {
-//   await initializeDatabase();
-// } catch (error) {
-//   console.log("Database already initialized");
-// }
 
 export async function POST(request) {
   try {
     const body = await request.json();
 
-    // Validate input
     const validatedData = signupSchema.parse(body);
 
-    // Check if user already exists
     const existingUser = await userDb.findByEmail(validatedData.email);
     if (existingUser) {
       return NextResponse.json(
@@ -27,16 +17,18 @@ export async function POST(request) {
       );
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(validatedData.password);
 
-    // Create user
     const result = await userDb.create(
       validatedData.email,
       hashedPassword,
       validatedData.name,
-      validatedData.role,
     );
+
+    const defaultOrg = await orgDb.findBySlug("ticketgo-default");
+    if (defaultOrg) {
+      await orgMemberDb.addMember(defaultOrg.id, result.lastInsertRowid, "ORG_MEMBER");
+    }
 
     return NextResponse.json(
       {
