@@ -10,14 +10,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Edit2, Calendar, User, Mail, Hash, CheckCircle2 } from "lucide-react";
+import { Edit2, Calendar, User, Mail, Hash, CheckCircle2, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { parseDate } from "@/lib/utils";
 import { motion } from "motion/react";
 
-export default function TicketDetails({ ticket, session, initialComments, admins }) {
+export default function TicketDetails({ ticket, session, initialComments, orgAdmins }) {
   const [comments, setComments] = useState(initialComments || []);
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const isOrgAdmin = session?.user?.currentOrgRole === 'ORG_ADMIN';
   const isOwner = session?.user?.id && (String(session.user.id) === String(ticket.created_by));
   const canEdit = isOwner && ticket.status === 'OPEN';
 
@@ -27,7 +27,6 @@ export default function TicketDetails({ ticket, session, initialComments, admins
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Left Column: Ticket Info (Full width on mobile, 2/3 on desktop) */}
       <div className="lg:col-span-2 space-y-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -38,19 +37,25 @@ export default function TicketDetails({ ticket, session, initialComments, admins
             <CardHeader className="bg-muted/30 pb-6">
               <div className="flex justify-between items-start gap-4 mb-4">
                  <div>
-                   <div className="flex items-center gap-2 mb-2">
+                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                      <Badge variant="outline" className="font-mono text-[10px] py-0 px-1.5 h-5">
                        #{ticket.id}
                      </Badge>
                      <StatusBadge status={ticket.status} />
                      <PriorityBadge priority={ticket.priority} />
+                     {ticket.org_name && (
+                       <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-5 flex items-center gap-1">
+                         <Building2 className="h-3 w-3" />
+                         {ticket.org_name}
+                       </Badge>
+                     )}
                    </div>
                    <CardTitle className="text-2xl font-bold leading-tight">
                      {ticket.title}
                    </CardTitle>
                  </div>
                  {canEdit && (
-                   <Button variant="outline" size="sm">
+                   <Button variant="outline" size="sm" className="shrink-0">
                      <Edit2 className="h-4 w-4 mr-2" />
                      Edit
                    </Button>
@@ -102,9 +107,8 @@ export default function TicketDetails({ ticket, session, initialComments, admins
         </motion.div>
       </div>
 
-      {/* Right Column: Metadata & Controls (Stack on mobile, sidebar on desktop) */}
       <div className="space-y-6">
-        {isAdmin && (
+        {isOrgAdmin && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -115,7 +119,7 @@ export default function TicketDetails({ ticket, session, initialComments, admins
                 <CardTitle className="text-sm font-bold uppercase tracking-wider text-amber-800 dark:text-amber-200">Admin Controls</CardTitle>
               </CardHeader>
               <CardContent>
-                <TicketAdminControls ticket={ticket} admins={admins} />
+                <TicketAdminControls ticket={ticket} orgAdmins={orgAdmins} />
               </CardContent>
             </Card>
           </motion.div>
@@ -142,6 +146,18 @@ export default function TicketDetails({ ticket, session, initialComments, admins
               </div>
 
               <Separator />
+
+              {ticket.org_name && (
+                <>
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase">Organization</span>
+                    <p className="text-sm flex items-center gap-1.5">
+                      <Building2 className="h-3.5 w-3.5" /> {ticket.org_name}
+                    </p>
+                  </div>
+                  <Separator />
+                </>
+              )}
 
               <div className="space-y-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase">Requested At</span>

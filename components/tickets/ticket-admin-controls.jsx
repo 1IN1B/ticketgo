@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2, UserPlus, CheckCircle, AlertTriangle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
-export default function TicketAdminControls({ ticket, admins }) {
+export default function TicketAdminControls({ ticket, orgAdmins }) {
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -94,7 +93,7 @@ export default function TicketAdminControls({ ticket, admins }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="null">Unassigned</SelectItem>
-              {admins.map((admin) => (
+              {orgAdmins?.map((admin) => (
                 <SelectItem key={admin.id} value={admin.id.toString()}>
                   {admin.name}
                 </SelectItem>

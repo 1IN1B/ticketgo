@@ -10,9 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { motion, AnimatePresence } from 'motion/react';
-import { Ticket, Eye, EyeOff, Loader2, Check, ArrowRight } from 'lucide-react';
+import { Ticket, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -20,14 +19,9 @@ export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(signupSchema),
-    defaultValues: {
-      role: 'USER'
-    }
   });
-
-  const role = watch('role');
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -143,35 +137,6 @@ export default function SignupForm() {
                   className="text-sm text-destructive"
                 >
                   {errors.password.message}
-                </motion.p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select
-                onValueChange={(val) => setValue('role', val)}
-                defaultValue={role}
-                disabled={isLoading}
-              >
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USER">User (Customer)</SelectItem>
-                  <SelectItem value="ADMIN">Admin (Support Agent)</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Select Admin to manage tickets, User to create them.
-              </p>
-              {errors.role && (
-                <motion.p
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-sm text-destructive"
-                >
-                  {errors.role.message}
                 </motion.p>
               )}
             </div>

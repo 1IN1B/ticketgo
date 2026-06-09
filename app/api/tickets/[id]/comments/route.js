@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { commentDb, ticketDb } from "@/lib/db";
+import { commentDb, ticketDb, orgMemberDb } from "@/lib/db";
 import { requireAuth } from "@/lib/auth/session";
 import { commentSchema } from "@/lib/validations";
 
-// GET /api/tickets/[id]/comments - Get all comments for a ticket
 export async function GET(request, { params }) {
   try {
     const user = await requireAuth();
@@ -15,12 +14,18 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
-    // Non-admin users can only view comments on their own tickets
-    if (user.role !== "ADMIN" && ticket.created_by !== parseInt(user.id)) {
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
+
+    if (!currentOrgId || ticket.org_id !== currentOrgId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const comments = await commentDb.getByTicketId(ticketId);
+    const isMember = await orgMemberDb.isMember(currentOrgId, parseInt(user.id));
+    if (!isMember) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const comments = await commentDb.getByTicketId(ticketId, currentOrgId);
 
     return NextResponse.json({ comments });
   } catch (error) {
@@ -37,7 +42,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// POST /api/tickets/[id]/comments - Add a comment to a ticket
 export async function POST(request, { params }) {
   try {
     const user = await requireAuth();
@@ -50,22 +54,26 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
-    // Non-admin users can only comment on their own tickets
-    if (user.role !== "ADMIN" && ticket.created_by !== parseInt(user.id)) {
+    const currentOrgId = user.currentOrgId ? parseInt(user.currentOrgId) : null;
+
+    if (!currentOrgId || ticket.org_id !== currentOrgId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Validate input
+    const isMember = await orgMemberDb.isMember(currentOrgId, parseInt(user.id));
+    if (!isMember) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const validatedData = commentSchema.parse(body);
 
-    // Create comment
     const result = await commentDb.create(
       ticketId,
       parseInt(user.id),
       validatedData.content,
     );
 
-    const comments = await commentDb.getByTicketId(ticketId);
+    const comments = await commentDb.getByTicketId(ticketId, currentOrgId);
     const newComment = comments.find((c) => c.id === result.lastInsertRowid);
 
     return NextResponse.json(

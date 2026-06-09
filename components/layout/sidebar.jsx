@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Ticket, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Ticket, Settings, LogOut, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'next-auth/react';
 import { motion } from 'motion/react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import OrgSwitcher from '@/components/organizations/org-switcher';
+import { Separator } from '@/components/ui/separator';
 
 const routes = [
   {
@@ -23,10 +25,16 @@ const routes = [
     color: 'text-violet-500',
   },
   {
+    label: 'Organizations',
+    icon: Building2,
+    href: '/organizations',
+    color: 'text-emerald-500',
+  },
+  {
     label: 'Settings',
     icon: Settings,
     href: '/settings',
-    color: 'text-emerald-500',
+    color: 'text-amber-500',
   },
 ];
 
@@ -68,6 +76,11 @@ export default function Sidebar() {
             <h1 className="text-xl font-bold tracking-tight">TicketGo</h1>
           </motion.div>
         </Link>
+
+        <OrgSwitcher />
+
+        <Separator className="my-4 bg-sidebar-border/50" />
+
         <motion.div
           variants={containerVariants}
           initial="hidden"
